@@ -8,11 +8,19 @@ run with: lab4
 #include <time.h>
 #include <pthread.h>
 
-void multiply(int a[][1000], int b[][500], int c[][500]) {
+#define DIM1 1200
+#define DIM2 1000
+#define DIM3 500
+
+static int a[DIM1][DIM2];
+static int b[DIM2][DIM3];
+static int c[DIM1][DIM3]; /* where c is the result of a * b */
+
+void multiply(int a[][DIM2], int b[][DIM3], int c[][DIM3]) {
 	int i, j, k;
-	int n = 1200;
-	int m = 1000;
-	int p = 500;	
+	int n = DIM1;
+	int m = DIM2;
+	int p = DIM3;
 	for (i=0; i < n; i++) {
  		for (j=0; j < p; j++) {
 	 		c[i][j]=0;
@@ -23,33 +31,28 @@ void multiply(int a[][1000], int b[][500], int c[][500]) {
 	}
 }
 
-void initializeA(int a[][1000]) {
+void initializeA(int a[][DIM2]) {
 	int i, j;
 
-	for (i = 0; i < 1200; i++) {
-		for ( j = 0; j < 1000; j++) {
+	for (i = 0; i < DIM1; i++) {
+		for ( j = 0; j < DIM2; j++) {
 			a[i][j] = i + j;
 		}
 	} 
 }
 
-void initializeB(int b[][500]) {
+void initializeB(int b[][DIM3]) {
 	int i, j;
 
-	for (i = 0; i < 1000; i++) {
-		for ( j = 0; j < 500; j++) {
+	for (i = 0; i < DIM2; i++) {
+		for ( j = 0; j < DIM3; j++) {
 			b[i][j] = j;
 		}
 	} 
 }
 
 int main(int argc, char*argv[]) {
-	static int a[1200][1000];
-	static int b[1000][500];
-	static int c[1200][500]; /* where c is the result of a * b */
-	int n = 1200;
-	int m = 1000;
-	int p = 500;
+
 	int i, j, k;
 	clock_t start, end;
 	double timeTaken;
