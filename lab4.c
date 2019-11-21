@@ -11,6 +11,7 @@ run with: lab4
 #define DIM1 1200
 #define DIM2 1000
 #define DIM3 500
+#define THREAD_NUM 6
 
 static int a[DIM1][DIM2];
 static int b[DIM2][DIM3];
@@ -44,7 +45,7 @@ void* multiplyWithThreads(void *args) {
 	int n = data->end;
 	int m = DIM2;
 	int p = DIM3;
-	//printf("start: %d, end: %d", data->start, data->end);
+	//printf("start: %d, end: %d\n", data->start, data->end);
 	
 	for (i=data->start; i < n; i++) {
  		for (j=0; j < p; j++) {
@@ -76,33 +77,35 @@ void initializeB(int b[][DIM3]) {
 	} 
 }
 
-int main(int argc, char*argv[]) {
-	int thread_num = 2;
-	int i, j, k;
+void test() {
+	int different = 0;
+	int i, j;
+	for (i = 0; i < DIM1; i++) {
+		for (j = 0; j < DIM3; j++) {
+			if (c[i][j] != d[i][j]) {
+				different = different + 1;	
+			}
+		}
+	}
+	if (different == 0) {
+		printf("No error\n");
+	} else {
+		printf("There were %d errors\n", different);
+	}
+}
+
+void multiplyThreads(int thread_num, pthread_t threads[]) {
+	struct location data[thread_num];
+	int k;
 	clock_t start, end;
 	double timeTaken;
-	int same = 0;
 
-	pthread_t threads[thread_num];
-	struct location data[thread_num];
-	//data = (struct location **)malloc(thread_num * sizeof(struct location));
-
-	initializeA(a);
-	initializeB(b);
-
-
-
-	multiply(a,b,d); //remove me
-
-
-
-	//multiple threads start ----------------
 	start = clock();
 
 	for (k=0; k < thread_num; k++) {
-		data[k].start = (DIM1 / thread_num) * k;
+		data[k].start = ((DIM1 / thread_num) * k);
 		data[k].end = (DIM1 / thread_num) * (k+1);
-		//printf("%d    start: %d end: %d", k, data[k].start, data[k].end);
+		//printf("%d    start: %d end: %d\n", k+1, data[k].start, data[k].end);
 		pthread_create(&threads[k], NULL, multiplyWithThreads, &data[k]);
 	}
 
@@ -114,25 +117,31 @@ int main(int argc, char*argv[]) {
 	timeTaken = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("It took %.3f seconds to multiply the two matrices with %d threads.\n", timeTaken, thread_num);
 	
+	test();
 
+}
 
-	for (i = 0; i < DIM1; i++) {
-		for (j = 0; j < DIM3; j++) {
-			if (c[i][j] != d[i][j]) {
-				same = same + 1;
-				//printf("%d\n", d[i][j]);	
-			}
-		}
-	}
+int main(int argc, char*argv[]) {
+	int i;
+	double timeTaken;
+	int different = 0;
+	clock_t start, end;
+	pthread_t threads[THREAD_NUM];
+	
+	//data = (struct location **)malloc(thread_num * sizeof(struct location));
 
-	printf("%d\n", same);
+	initializeA(a);
+	initializeB(b);
 
-	//--------------------------------------
 	start = clock();
-	multiply(a,b,c);
+	multiply(a,b,d); //for testing matrix equality
 	end = clock();
 	timeTaken = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("It took %.3f seconds to multiply the two matrices with 1 thread.\n", timeTaken);
-		
+	
+	for (i = 2; i <= THREAD_NUM; i++) {
+		multiplyThreads(i, threads);
+	}
+	
 	return 0;
 }
