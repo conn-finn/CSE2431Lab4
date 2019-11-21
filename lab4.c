@@ -42,6 +42,7 @@ void* multiplyWithThreads(void *args) {
 	int n = DIM1;
 	int m = DIM2;
 	int p = DIM3;
+
 	for (i=0; i < n; i++) {
  		for (j=0; j < p; j++) {
 	 		c[i][j]=0;
@@ -79,11 +80,12 @@ int main(int argc, char*argv[]) {
 	double timeTaken;
 
 	pthread_t threads[thread_num];
-	struct location data[thread_num][thread_num];
+	struct location data[DIM1][DIM3];
 	//data = (struct location **)malloc(thread_num * sizeof(struct location));
 
 	initializeA(a);
 	initializeB(b);
+	//multiple threads start ----------------
 	start = clock();
 
 	for (i = 0; i < DIM1; i++) {
@@ -97,15 +99,21 @@ int main(int argc, char*argv[]) {
 	for (k=0; k < thread_num; k++) {
 		pthread_create(&threads[k], NULL, multiplyWithThreads, data + (k * sizeof(data[0]) / thread_num));
 	}
-	//multiply(a, b, c);
+
 	for (k=0; k < thread_num; k++) {
 		pthread_join(threads[k], NULL);
 	}
-
+	
 	end = clock();
 	timeTaken = ((double) (end - start)) / CLOCKS_PER_SEC;
 	printf("It took %.3f seconds to multiply the two matrices with %d threads.\n", timeTaken, &thread_num);
-	
+	/* free memory
+	for (i = 0; i < DIM1; i++) {
+		free(data[i]);
+	}
+	free(data);
+	*/
+	//--------------------------------------
 	start = clock();
 	multiply(a,b,c);
 	end = clock();
